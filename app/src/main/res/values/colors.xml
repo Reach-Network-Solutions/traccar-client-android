@@ -7,9 +7,9 @@
 <!--    <color name="light">#FFFFFF</color>-->
 
     <!--Nexus Tracker Colors-->
-    <color name="primary">#074EE8</color>
-    <color name="primary_dark">#0027B5</color>
-    <color name="accent">#0027B5</color>
+    <color name="primary">#547971</color>
+    <color name="primary_dark">#294d46</color>
+    <color name="accent">#547971</color>
     <color name="light">#FFFFFF</color>
 
 </resources>
