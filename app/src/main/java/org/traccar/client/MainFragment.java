@@ -47,6 +47,8 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.TwoStatePreference;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
@@ -137,9 +139,35 @@ public class MainFragment extends PreferenceFragmentCompat implements OnSharedPr
         alarmIntent = PendingIntent.getBroadcast(getActivity(), 0, new Intent(getActivity(), AutostartReceiver.class), 0);
 
         if (sharedPreferences.getBoolean(KEY_STATUS, false)) {
-            startTrackingService(true, false);
+            if(checkDeviceIdentifier()){
+                startTrackingService(true, false);
+            }else{
+                setStatusToFalse();
+                createDeviceIdentifierDialog();
+            }
+
         }
 
+    }
+
+    private void createDeviceIdentifierDialog() {
+        /*AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        builder.setMessage(getString(R.string.device_identifier_required));
+        builder.setPositiveButton(android.R.string.ok, null);
+        builder.show();*/
+        AlertDialog alertDialog = new MaterialAlertDialogBuilder(getActivity())
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setMessage(getString(R.string.device_identifier_required))
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+
+    }
+
+    public Boolean checkDeviceIdentifier(){
+        return !sharedPreferences.getString(KEY_DEVICE, null).equals("0") &&
+                (sharedPreferences.getString(KEY_DEVICE, null).length() > 9)
+                ;
     }
 
     public static class NumericEditTextPreferenceDialogFragment extends EditTextPreferenceDialogFragmentCompat {
@@ -215,7 +243,12 @@ public class MainFragment extends PreferenceFragmentCompat implements OnSharedPr
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(KEY_STATUS)) {
             if (sharedPreferences.getBoolean(KEY_STATUS, false)) {
-                startTrackingService(true, false);
+                if(checkDeviceIdentifier()){
+                    startTrackingService(true, false);
+                }else{
+                    setStatusToFalse();
+                    createDeviceIdentifierDialog();
+                }
             } else {
                 stopTrackingService();
             }
@@ -223,6 +256,12 @@ public class MainFragment extends PreferenceFragmentCompat implements OnSharedPr
         } else if (key.equals(KEY_DEVICE)) {
             findPreference(KEY_DEVICE).setSummary(sharedPreferences.getString(KEY_DEVICE, null));
         }
+    }
+
+    private void setStatusToFalse(){
+        sharedPreferences.edit().putBoolean(KEY_STATUS, false).apply();
+        TwoStatePreference preference = findPreference(KEY_STATUS);
+        preference.setChecked(false);
     }
 
     @Override
@@ -244,7 +283,8 @@ public class MainFragment extends PreferenceFragmentCompat implements OnSharedPr
         PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
 
         if (!sharedPreferences.contains(KEY_DEVICE)) {
-            String id = String.valueOf(new Random().nextInt(900000) + 100000);
+            //String id = String.valueOf(new Random().nextInt(900000) + 100000);
+            String id = String.valueOf(0);
             sharedPreferences.edit().putString(KEY_DEVICE, id).apply();
             ((EditTextPreference) findPreference(KEY_DEVICE)).setText(id);
         }
